@@ -193,6 +193,8 @@ class RiskEngine:
         if isinstance(latest, str):
             age = (date.fromisoformat(str(as_of)[:10]) - date.fromisoformat(latest[:10])).days
         confidence = self.confidence(completeness, age, imputed)
+        if score is None:
+            confidence = "low"  # no score means we cannot vouch for anything
 
         result = {
             "code": location.code, "name": location.name, "as_of": str(as_of),

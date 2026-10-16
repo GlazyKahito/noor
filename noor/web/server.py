@@ -374,6 +374,16 @@ class NoorHandler(BaseHTTPRequestHandler):
         sys.stderr.write(f"{self.log_date_time_string()} {self.command} {path} {args[1] if len(args) > 1 else ''}\n")
 
 
+class NoorHTTPServer(ThreadingHTTPServer):
+    """ThreadingHTTPServer whose worker threads stop when the server stops.
+
+    NoorHandler speaks HTTP/1.1 with keep-alive (every response has a Content-Length), so a
+    browser reuses one connection for a page and its charts.
+    """
+
+    daemon_threads = True
+
+
 def check_date(text):
     """Reject anything that is not YYYY-MM-DD."""
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", str(text)):
@@ -383,7 +393,7 @@ def check_date(text):
 def run(port=3060, host="127.0.0.1"):
     """Start the local server (Ctrl+C to stop)."""
     prepare()
-    server = ThreadingHTTPServer((host, port), NoorHandler)
+    server = NoorHTTPServer((host, port), NoorHandler)
     print(f"NOOR running at http://{host}:{port}  (database: {settings.database_path()})")
     try:
         server.serve_forever()

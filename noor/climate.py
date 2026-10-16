@@ -136,7 +136,9 @@ def location_comparison(df):
     )
     span = (summary["last_day"] - summary["first_day"]).dt.days + 1
     summary["days_missing"] = span - summary["days_observed"]
-    return summary.round(1).reset_index()
+    numbers = ["mean_tmax", "max_tmax", "mean_tmin", "mean_humidity"]
+    summary[numbers] = summary[numbers].round(1)
+    return summary.reset_index()
 
 
 def monthly_means(df):
