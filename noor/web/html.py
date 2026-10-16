@@ -1,5 +1,5 @@
 """Small helpers that build HTML strings. Every value shown to the user goes through esc()."""
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from html import escape
 from urllib.parse import urlencode
 
@@ -98,8 +98,13 @@ FONTS = ("https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700"
 
 
 def dateline(today=None):
-    """Today's date set like a newspaper dateline, e.g. 'Friday, 16 October 2026'."""
-    today = today or date.today()
+    """Today's date set like a newspaper dateline, e.g. 'Friday, 16 October 2026'.
+
+    Uses Indian Standard Time (UTC+5:30), so the date is right on the hosting
+    server too, which runs on UTC.
+    """
+    ist = timezone(timedelta(hours=5, minutes=30))
+    today = today or datetime.now(ist).date()
     return f"{today:%A}, {today.day} {today:%B %Y}"
 
 
