@@ -19,22 +19,22 @@ SPACING_KM = 3.0
 REGION_NAME = "Saptapur (synthetic demo district)"
 SOURCE_NAME = "NOOR synthetic demo data"
 
-# code, name, (col,row), population, area km2, heat-island offset C, base humidity %, day-night range C,
+# code, name, (col,row), population, area km2, heat-island offset C (green/lake wards are cooler), base humidity %, day-night range C,
 # shares: elderly, children, outdoor workers, poor housing, low income, piped water (None = unknown)
 WARDS = [
     ("SPR-01", "Old Market", (0, 0), 92000, 3.1, 1.8, 34, 11.5, (0.09, 0.09, 0.22, 0.38, 0.33, 0.71)),
-    ("SPR-02", "Fort Ward", (1, 0), 64000, 3.8, 1.2, 33, 12.0, (0.12, 0.07, 0.12, 0.20, 0.22, 0.83)),
+    ("SPR-02", "Fort Ward", (1, 0), 64000, 3.8, 0.2, 33, 12.0, (0.12, 0.07, 0.12, 0.20, 0.22, 0.83)),
     ("SPR-03", "Rail Colony", (2, 0), 71000, 4.4, 1.0, 32, 12.5, (0.07, 0.10, 0.25, 0.41, 0.36, 0.66)),
     ("SPR-04", "Mill Lines", (3, 0), 83000, 3.6, 1.6, 31, 12.0, (0.06, 0.12, 0.33, 0.55, 0.47, 0.52)),
     ("SPR-05", "Riverside", (0, 1), 58000, 5.2, -1.2, 56, 9.5, (0.08, 0.11, 0.27, 0.47, 0.42, 0.58)),
-    ("SPR-06", "Civil Lines", (1, 1), 41000, 6.0, -0.6, 35, 13.0, (0.13, 0.05, 0.06, 0.05, 0.08, 0.97)),
+    ("SPR-06", "Civil Lines", (1, 1), 41000, 6.0, -2.4, 35, 13.0, (0.13, 0.05, 0.06, 0.05, 0.08, 0.97)),
     ("SPR-07", "Bus Stand", (2, 1), 77000, 3.2, 1.4, 33, 12.0, (0.06, 0.09, 0.29, 0.31, 0.30, 0.74)),
     ("SPR-08", "Industrial Estate", (3, 1), 49000, 7.5, 2.2, 29, 13.0, (0.04, 0.08, 0.34, 0.44, 0.39, 0.61)),
-    ("SPR-09", "Lake View", (0, 2), 52000, 6.4, -0.9, 44, 11.0, (0.11, 0.07, 0.10, 0.12, 0.15, 0.90)),
-    ("SPR-10", "University Area", (1, 2), 66000, 5.5, 0.2, 34, 12.5, (0.05, 0.06, 0.08, 0.10, 0.18, 0.92)),
+    ("SPR-09", "Lake View", (0, 2), 52000, 6.4, -2.2, 44, 11.0, (0.11, 0.07, 0.10, 0.12, 0.15, 0.90)),
+    ("SPR-10", "University Area", (1, 2), 66000, 5.5, -1.6, 34, 12.5, (0.05, 0.06, 0.08, 0.10, 0.18, 0.92)),
     ("SPR-11", "New Township", (2, 2), 104000, 8.1, 0.6, 32, 13.0, (0.07, 0.10, 0.15, 0.18, 0.21, 0.88)),
     ("SPR-12", "Brick Kilns", (3, 2), 38000, 9.6, 1.9, 27, 14.0, (0.05, 0.13, 0.31, 0.58, 0.49, 0.38)),
-    ("SPR-13", "Garden Colony", (0, 3), 47000, 6.9, -0.8, 38, 12.5, (0.14, 0.06, 0.07, 0.06, 0.09, 0.95)),
+    ("SPR-13", "Garden Colony", (0, 3), 47000, 6.9, -2.6, 38, 12.5, (0.14, 0.06, 0.07, 0.06, 0.09, 0.95)),
     ("SPR-14", "Canal Road", (1, 3), 69000, 5.9, 0.7, 41, 11.5, (0.09, 0.10, 0.24, 0.36, 0.34, 0.69)),
     # Population unknown on purpose: shows how NOOR handles missing exposure data.
     ("SPR-15", "Airport Road", (2, 3), None, 11.2, 0.9, 30, 13.5, (0.06, 0.08, 0.19, 0.22, 0.24, 0.80)),
