@@ -107,7 +107,7 @@ def page(title, active, body, message=None, error=None, synthetic=True):
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=1280">
 <title>{esc(title)} · NOOR</title>
 <meta name="description" content="NOOR — Climate Intelligence &amp; Resilience. See the risk. Save lives.">
 <link rel="stylesheet" href="/static/style.css">

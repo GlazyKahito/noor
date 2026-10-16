@@ -105,6 +105,9 @@ docs/                  documentation
   (for example model-derived weather from Open-Meteo via `scripts/fetch_open_meteo.py`).
 - Thresholds, weights and planning rates are NOOR defaults, not official criteria, and have
   not been validated against health outcomes. Scores are relative priorities, not predictions.
+- Desktop browsers only: the interface is designed for laptop and desktop screens 1280 px and
+  wider (checked down to a 1366×768 laptop window). Phones and tablets are not supported; below
+  1200 px the page keeps its width and scrolls sideways.
 - The map is a schematic grid, not real geography.
 - The hosted demo keeps its database in temporary storage: changes there are not permanent.
 - There is no login. Anyone who can reach the server can change data; add authentication

@@ -31,11 +31,14 @@ file, so tests never touch `instance/noor.db`.
 Run during development with headless Chromium (Playwright), not part of the Python suite because
 it needs Node.js:
 
-- 13 pages × 3 widths (375, 768, 1440 px): HTTP 200, exactly one `<h1>`, no horizontal page
-  overflow, every chart image returns a PNG, no console errors, all 19 dashboard links work.
-- 16 workflow steps at phone width: explorer filter shows missing days; invalid and valid what-if
-  weights; precautionary value explained; run the warning engine, acknowledge and resolve an
-  alert; take a cooling centre offline and see the ward's score rise (31.7 → 33.4); add a
+NOOR targets desktop browsers only (1280 px and wider).
+
+- 13 pages × 4 desktop windows (1280×800, 1366×768, 1440×900, 1920×1080): HTTP 200, exactly one
+  `<h1>`, no horizontal page overflow, every chart image returns a PNG, no console errors, all 19
+  dashboard links work.
+- 16 workflow steps in a 1366×768 window: explorer filter shows missing days; invalid and valid
+  what-if weights; precautionary value explained; run the warning engine, acknowledge and resolve
+  an alert; take a cooling centre offline and see the ward's score rise (31.7 → 33.4); add a
   resource; save a plan; run and reset a scenario; import a CSV with 7 good rows and 1 bad row;
   download a report; keyboard Tab reaches the skip link first; no console errors.
 
@@ -46,4 +49,3 @@ it needs Node.js:
 - The invalid-weights page answered with HTTP 400, which browsers log as a console error; the
   form now comes back with the reason (HTTP 200), same for invalid scenario parameters.
 - A `style=` attribute broke the page's own Content-Security-Policy; replaced with a CSS class.
-- On narrow phones a long `<code>` line overflowed the Data page; it now wraps.

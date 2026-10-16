@@ -1,4 +1,5 @@
-/* NOOR stylesheet — plain CSS, no framework.
+/* NOOR stylesheet — plain CSS, no framework. Desktop browsers only (1280 px and wider);
+   below 1200 px the page keeps its width and the browser scrolls sideways.
    Palette: deep wine #7F011F, warm sand #F5EBD0, charcoal #171719 and muted neutrals. */
 :root {
   --wine: #7f011f;
@@ -19,17 +20,17 @@
 html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
+  min-width: 1200px;
   background: var(--paper);
   color: var(--ink);
   font: 16px/1.55 var(--sans);
-  overflow-x: hidden;
 }
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--wine); text-underline-offset: 2px; }
 a:hover { color: var(--wine-dark); }
 :focus-visible { outline: 3px solid var(--wine); outline-offset: 2px; }
 h1, h2, h3 { font-family: var(--serif); font-weight: 600; line-height: 1.2; margin: 0 0 .5rem; }
-h1 { font-size: clamp(1.8rem, 4vw, 2.6rem); letter-spacing: -.01em; }
+h1 { font-size: 2.5rem; letter-spacing: -.01em; }
 h2 { font-size: 1.35rem; margin-top: 2rem; }
 h3 { font-size: 1.08rem; margin-top: 1.2rem; }
 p { margin: 0 0 .8rem; max-width: 72ch; }
@@ -45,8 +46,8 @@ pre { background: var(--sand); padding: .8rem 1rem; overflow-x: auto; border-rad
 .demo-banner a { color: var(--sand); }
 
 .site-header {
-  display: flex; align-items: center; gap: 1.5rem; padding: .9rem clamp(1rem, 4vw, 2.5rem);
-  border-bottom: 1px solid var(--line); background: var(--sand); flex-wrap: wrap;
+  display: flex; align-items: center; gap: 2rem; padding: .9rem 2.5rem;
+  border-bottom: 1px solid var(--line); background: var(--sand);
 }
 .wordmark {
   font-family: var(--serif); font-size: 1.5rem; font-weight: 700; letter-spacing: .32em; color: var(--ink);
@@ -61,7 +62,7 @@ pre { background: var(--sand); padding: .8rem 1rem; overflow-x: auto; border-rad
 .site-header nav a:hover { border-bottom-color: var(--line); }
 .site-header nav a[aria-current="page"] { border-bottom-color: var(--wine); color: var(--wine); font-weight: 600; }
 
-main { padding: 1.5rem clamp(1rem, 4vw, 2.5rem) 3rem; max-width: 1240px; margin: 0 auto; }
+main { padding: 1.5rem 2.5rem 3rem; max-width: 1240px; margin: 0 auto; }
 .lead { font-size: 1.12rem; color: var(--muted); }
 .eyebrow { text-transform: uppercase; letter-spacing: .14em; font-size: .75rem; color: var(--wine); font-weight: 700; margin-bottom: .3rem; }
 .muted { color: var(--muted); }
@@ -69,21 +70,21 @@ main { padding: 1.5rem clamp(1rem, 4vw, 2.5rem) 3rem; max-width: 1240px; margin:
 
 /* overview */
 .hero { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--line); margin-bottom: 1.5rem; }
-.hero h1 { font-size: clamp(2.6rem, 8vw, 4.6rem); letter-spacing: .2em; margin-bottom: .2rem; }
+.hero h1 { font-size: 4.4rem; letter-spacing: .2em; margin-bottom: .2rem; }
 .hero .tagline { font-family: var(--serif); font-style: italic; font-size: 1.4rem; color: var(--wine); }
-.steps { list-style: none; padding: 0; margin: 1rem 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: .6rem; counter-reset: step; }
+.steps { list-style: none; padding: 0; margin: 1rem 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: .8rem; counter-reset: step; }
 .steps li { border-top: 3px solid var(--wine); padding: .6rem .2rem; counter-increment: step; }
 .steps li::before { content: "0" counter(step); font-family: var(--mono); color: var(--muted); font-size: .8rem; display: block; }
 .steps a { font-weight: 600; }
 
 /* layout */
 .grid { display: grid; gap: 1.2rem; }
-.grid-2 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr)); }
-.grid-3 { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.grid-2 { grid-template-columns: 1fr 1fr; }
+.grid-3 { grid-template-columns: 1fr 1fr 1fr; }
 .panel { background: var(--surface); border: 1px solid var(--line); padding: 1rem 1.1rem; border-radius: 4px; min-width: 0; }
 .panel > h2:first-child, .panel > h3:first-child { margin-top: 0; }
 
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: .8rem; margin: 1rem 0; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: .8rem; margin: 1rem 0; }
 .stat { border-left: 3px solid var(--wine); padding: .3rem .8rem; background: var(--surface); }
 .stat-label { font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
 .stat-value { font-family: var(--serif); font-size: 1.9rem; line-height: 1.15; }
@@ -124,7 +125,7 @@ input, select, textarea {
   background: #fff; color: var(--ink); max-width: 100%;
 }
 .hint { font-size: .78rem; color: var(--muted); }
-.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: .7rem; margin-bottom: .8rem; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .7rem; margin-bottom: .8rem; }
 button, .button {
   font: inherit; font-size: .9rem; font-weight: 600; padding: .45rem .9rem; border-radius: 3px; cursor: pointer;
   background: var(--wine); color: #fff; border: 1px solid var(--wine); text-decoration: none; display: inline-block;
@@ -150,20 +151,12 @@ button.secondary:hover, .button.secondary:hover { background: var(--sand); color
 .alert-card details { font-size: .85rem; }
 
 .reasons { margin: .3rem 0 0 1.1rem; padding: 0; }
-.site-footer { border-top: 1px solid var(--line); padding: 1.5rem clamp(1rem, 4vw, 2.5rem); font-size: .85rem; color: var(--muted); background: var(--sand); }
+.site-footer { border-top: 1px solid var(--line); padding: 1.5rem 2.5rem; font-size: .85rem; color: var(--muted); background: var(--sand); }
 .site-footer p { max-width: none; }
 
-@media (max-width: 640px) {
-  .site-header { gap: .6rem; }
-  .site-header nav { font-size: .88rem; gap: .1rem .75rem; }
-  th, td { padding: .4rem .5rem; }
-  .stat-value { font-size: 1.5rem; }
-}
-@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
 @media print {
   .site-header nav, .demo-banner, form, .site-footer a { display: none; }
   body { background: #fff; }
 }
 .narrow { width: 7rem; }
-code { overflow-wrap: anywhere; }
 input[type="file"] { width: 100%; }

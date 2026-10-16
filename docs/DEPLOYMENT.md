@@ -75,5 +75,5 @@ Run headless against https://noor-climate.vercel.app after the Git-triggered dep
   score 56.2 → 59.6, 5 centres placed), SQL query, 400 for invalid scenario and weights, 404 for
   an unknown location, POST alert run and what-if weights, CSV provenance header, PNG chart,
   cross-site form POST refused (403).
-- 13 pages × 3 widths (375, 768, 1440 px): all HTTP 200, no horizontal overflow, all chart
-  images valid, no console errors; 19 dashboard links all working.
+- 13 pages × 4 desktop windows (1280×800, 1366×768, 1440×900, 1920×1080): all HTTP 200, no
+  horizontal overflow, all chart images valid, no console errors; 19 dashboard links all working.
