@@ -64,3 +64,16 @@ The `*-krut1.vercel.app` deployment URLs are protected by Vercel login; use the 
   synthetic and resets; do not load real or personal data into it.
 - Security headers (CSP with no scripts, frame denial, nosniff) are sent by the app itself.
 - Upload and request size limits are enforced in code (2 MB CSV, 2.5 MB request body).
+
+## Last verification of the live site (2026-10-16)
+
+Run headless against https://noor-climate.vercel.app after the Git-triggered deploy:
+
+- 17/17 API checks passed: health (16 locations), status (`synthetic_only: true`), risk list,
+  precautionary vulnerability for SPR-16, alerts, plan and strategy comparison (risk-weighted
+  coverage 0.746 population-first vs 0.758 risk-first), scenario (+2 °C and 5 new centres: mean
+  score 56.2 → 59.6, 5 centres placed), SQL query, 400 for invalid scenario and weights, 404 for
+  an unknown location, POST alert run and what-if weights, CSV provenance header, PNG chart,
+  cross-site form POST refused (403).
+- 13 pages × 3 widths (375, 768, 1440 px): all HTTP 200, no horizontal overflow, all chart
+  images valid, no console errors; 19 dashboard links all working.
