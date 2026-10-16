@@ -2,6 +2,8 @@
 
 **See the risk. Save lives.**
 
+Live demo: **https://noor-climate.vercel.app** · Repository: https://github.com/GlazyKahito/noor
+
 NOOR helps communities and decision-makers understand heat risk, find the people most
 exposed, plan cooling, water and medical resources, and prepare for extreme heat. It
 follows one workflow:

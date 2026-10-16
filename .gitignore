@@ -13,3 +13,7 @@ instance/
 node_modules/
 e2e-artifacts/
 charts/
+
+.vercel
+.env*
+!.env.example
