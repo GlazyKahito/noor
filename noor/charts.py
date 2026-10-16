@@ -17,33 +17,51 @@ import seaborn as sns  # noqa: E402
 from . import settings  # noqa: E402
 
 CHART_LOCK = threading.Lock()
-INK = "#171719"
-WINE = "#7F011F"
-PAPER = "#FBF7EC"
-GRID = "#E4DAC0"
-MUTED = "#6B645A"
+
+# Vintage palette, matching style.css
+PAPER = "#F5EBD0"   # sand paper background
+INK = "#2B1D14"     # ink-brown text
+WINE = "#7F011F"    # main series
+OCHRE = "#A8741A"   # second series
+OLIVE = "#5F6B2E"   # third series
+RULE = "#8A7350"    # axis lines
+MUTED = "#5C4A36"
 CATEGORY_COLOURS = {
-    "Low": "#CFC5A5",
-    "Moderate": "#E0A24A",
-    "High": "#C4573A",
-    "Severe": "#8E1630",
-    "Extreme": "#4A0012",
-    "Insufficient data": "#9A948A",
+    "Low": "#C9BE97",
+    "Moderate": "#D9B45A",
+    "High": "#A9481F",
+    "Severe": "#7F011F",
+    "Extreme": "#3E0010",
+    "Insufficient data": "#9A9078",
 }
+# sand -> ochre -> rust -> wine -> deep wine, for heatmaps
+VINTAGE_CMAP = sns.color_palette("blend:#F5EBD0,#D9B45A,#A9481F,#7F011F,#3E0010", as_cmap=True)
+
+# Theme settings applied once to every Matplotlib figure: serif type, paper colours, no grid.
+plt.rcParams.update({
+    "font.family": "serif",
+    "font.serif": ["DejaVu Serif", "Georgia", "Times New Roman"],
+    "figure.facecolor": PAPER,
+    "axes.facecolor": PAPER,
+    "savefig.facecolor": PAPER,
+    "text.color": INK,
+    "axes.labelcolor": INK,
+    "axes.edgecolor": RULE,
+    "xtick.color": MUTED,
+    "ytick.color": MUTED,
+    "axes.grid": False,
+    "legend.frameon": False,
+})
 
 
-def _style(ax, title):
-    """Shared look: paper background, light grid, no top/right frame."""
-    ax.set_facecolor(PAPER)
-    ax.figure.set_facecolor(PAPER)
-    ax.set_title(title, loc="left", fontsize=11, color=INK, fontweight="bold", pad=10)
-    ax.grid(axis="y", color=GRID, linewidth=0.8)
-    ax.set_axisbelow(True)
+def vintage_style(ax, title):
+    """The one shared chart style: title set like a printed caption, only left and bottom rules."""
+    ax.set_title(title, loc="left", fontsize=11, color=WINE, fontweight="bold", fontstyle="italic", pad=10)
     for side in ("top", "right"):
         ax.spines[side].set_visible(False)
     for side in ("left", "bottom"):
-        ax.spines[side].set_color(MUTED)
-    ax.tick_params(colors=MUTED, labelsize=8)
+        ax.spines[side].set_color(RULE)
+    ax.tick_params(labelsize=8, length=3)
 
 
 def _png(fig):
@@ -59,7 +77,6 @@ def empty_chart(message):
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(6, 1.6))
         ax.axis("off")
-        fig.set_facecolor(PAPER)
         ax.text(0.5, 0.5, message, ha="center", va="center", color=MUTED, fontsize=10)
         return _png(fig)
 
@@ -71,16 +88,16 @@ def trend_chart(table, title):
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(9, 3.6))
         ax.plot(table.index, table["t_max"], color=WINE, linewidth=1.8, label="Max temperature")
-        ax.plot(table.index, table["t_min"], color="#B9A37A", linewidth=1.4, label="Min temperature")
-        ax.plot(table.index, table["heat_index"], color=INK, linewidth=1, linestyle="--", label="Heat index")
+        ax.plot(table.index, table["t_min"], color=OLIVE, linewidth=1.4, label="Min temperature")
+        ax.plot(table.index, table["heat_index"], color=OCHRE, linewidth=1.2, linestyle="--", label="Heat index")
         ax.axhline(settings.HOT_DAY_C, color=WINE, linewidth=0.7, alpha=0.5)
         missing = table.index[table["t_max"].isna()]
         if len(missing):
             low = np.nanmin(table[["t_min", "t_max"]].to_numpy())
             ax.scatter(missing, [low - 1] * len(missing), marker="|", color=MUTED, s=60, label="Missing day")
-        _style(ax, title)
+        vintage_style(ax, title)
         ax.set_ylabel("°C", color=MUTED)
-        ax.legend(fontsize=8, frameon=False, ncol=4, loc="upper left")
+        ax.legend(fontsize=8, ncol=4, loc="upper left")
         fig.autofmt_xdate()
         return _png(fig)
 
@@ -96,9 +113,8 @@ def risk_bars(assessments):
         ax.barh([f"{a['code']} {a['name']}" for a in rows], [a["score"] for a in rows],
                 color=[CATEGORY_COLOURS.get(a["category"], MUTED) for a in rows])
         for threshold, _name in settings.CATEGORIES[:-1]:
-            ax.axvline(threshold, color=GRID, linewidth=0.8, zorder=0)
-        _style(ax, "Heat-risk score by location (0-100)")
-        ax.grid(False)
+            ax.axvline(threshold, color=RULE, linewidth=0.5, linestyle=":", zorder=0)
+        vintage_style(ax, "Heat-risk score by location (0-100)")
         ax.set_xlim(0, 100)
         return _png(fig)
 
@@ -110,11 +126,11 @@ def score_histogram(assessments):
         return empty_chart("No scored locations")
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(6, 2.8))
-        ax.hist(scores, bins=np.arange(0, 105, 5), color=WINE, edgecolor=PAPER)
+        ax.hist(scores, bins=np.arange(0, 105, 5), color=WINE, edgecolor=PAPER)  # histogram
         for threshold, name in settings.CATEGORIES[:-1]:
             ax.axvline(threshold, color=MUTED, linewidth=0.8, linestyle=":")
             ax.text(threshold + 1, ax.get_ylim()[1] * 0.9, name, fontsize=7, color=MUTED)
-        _style(ax, "How scores are spread")
+        vintage_style(ax, "How scores are spread")
         ax.set_xlabel("Score", color=MUTED)
         ax.set_ylabel("Locations", color=MUTED)
         return _png(fig)
@@ -136,20 +152,16 @@ def risk_map(assessments, value="score"):
         labels.loc[a["grid_y"], a["grid_x"]] = f"{a['code']}\n{a['name'][:14]}\n{shown}"
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(7.5, 6))
-        cmap = sns.color_palette("blend:#F5EBD0,#C4573A,#7F011F,#2A000A", as_cmap=True)
-        sns.heatmap(grid, annot=labels, fmt="", cmap=cmap, vmin=0, vmax=100, linewidths=3, linecolor=PAPER,
+        sns.heatmap(grid, annot=labels, fmt="", cmap=VINTAGE_CMAP, vmin=0, vmax=100, linewidths=3, linecolor=PAPER,
                     cbar_kws={"label": value.replace("_", " ") + " (0-100)", "shrink": 0.7}, ax=ax,
                     annot_kws={"fontsize": 8})
         for text in ax.texts:  # dark text on light cells, light text on dark cells
             x, y = text.get_position()
             cell = grid.iloc[int(y), int(x)]
-            text.set_color("white" if (not np.isnan(cell) and cell > 55) else INK)
-        ax.set_facecolor(PAPER)
-        fig.set_facecolor(PAPER)
+            text.set_color("white" if (not np.isnan(cell) and cell > 45) else INK)
         ax.set_xticks([])
         ax.set_yticks([])
-        ax.set_title(f"Schematic ward grid — {value.replace('_', ' ')} (not to scale)", loc="left",
-                     fontsize=11, color=INK, fontweight="bold")
+        vintage_style(ax, f"Schematic ward grid — {value.replace('_', ' ')} (not to scale)")
         return _png(fig)
 
 
@@ -164,12 +176,10 @@ def temperature_heatmap(frame, days=30):
     pivot.columns = [c[5:] for c in pivot.columns]  # show MM-DD
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(10, 0.35 * len(pivot) + 1.5))
-        sns.heatmap(pivot, cmap="YlOrRd", cbar_kws={"label": "Max temperature °C"}, ax=ax, linewidths=0.3,
+        sns.heatmap(pivot, cmap=VINTAGE_CMAP, cbar_kws={"label": "Max temperature °C"}, ax=ax, linewidths=0.3,
                     linecolor=PAPER)
-        ax.set_facecolor("#D8D2C4")  # missing days show as grey
-        fig.set_facecolor(PAPER)
-        ax.set_title(f"Daily maximum temperature, last {days} days (grey = missing)", loc="left", fontsize=11,
-                     color=INK, fontweight="bold")
+        ax.set_facecolor("#CFC6B0")  # missing days show as grey
+        vintage_style(ax, f"Daily maximum temperature, last {days} days (grey = missing)")
         ax.set_xlabel("")
         ax.set_ylabel("")
         ax.tick_params(labelsize=7, colors=MUTED)
@@ -185,12 +195,12 @@ def allocation_chart(plan):
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(8, 3.2))
         x = np.arange(len(types))
-        ax.bar(x - 0.2, demand, width=0.4, color="#D8C9A0", label="Estimated demand")
+        ax.bar(x - 0.2, demand, width=0.4, color=OCHRE, label="Estimated demand")
         ax.bar(x + 0.2, served, width=0.4, color=WINE, label="Can be served")
         ax.set_xticks(x, labels)
         ax.set_yscale("log")
-        _style(ax, "Demand vs capacity per day (log scale)")
-        ax.legend(fontsize=8, frameon=False)
+        vintage_style(ax, "Demand vs capacity per day (log scale)")
+        ax.legend(fontsize=8)
         return _png(fig)
 
 
@@ -202,12 +212,12 @@ def scenario_chart(comparison):
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(9, 3.4))
         x = np.arange(len(rows))
-        ax.bar(x - 0.2, [r["score_before"] for r in rows], width=0.4, color="#D8C9A0", label="Today")
+        ax.bar(x - 0.2, [r["score_before"] for r in rows], width=0.4, color=OLIVE, label="Today")
         ax.bar(x + 0.2, [r["score_after"] for r in rows], width=0.4, color=WINE, label="Scenario")
         ax.set_xticks(x, [r["code"] for r in rows], rotation=60)
         ax.set_ylim(0, 100)
-        _style(ax, "Risk score: today vs scenario")
-        ax.legend(fontsize=8, frameon=False)
+        vintage_style(ax, "Risk score: today vs scenario")
+        ax.legend(fontsize=8)
         return _png(fig)
 
 
@@ -220,10 +230,10 @@ def dimension_chart(result):
     with CHART_LOCK:
         fig, ax = plt.subplots(figsize=(6, 2.6))
         heights = [0 if v is None else v for v in values]
-        bars = ax.bar(names, heights, color=[WINE if v is not None else "#CFC8B8" for v in values])
+        bars = ax.bar(names, heights, color=[WINE if v is not None else "#CFC6B0" for v in values])
         for bar, v in zip(bars, values):
             ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + 0.02,
                     "missing" if v is None else f"{v:.2f}", ha="center", fontsize=8, color=INK)
         ax.set_ylim(0, 1.1)
-        _style(ax, f"{result['code']} — dimensions (0 = best, 1 = worst)")
+        vintage_style(ax, f"{result['code']} — dimensions (0 = best, 1 = worst)")
         return _png(fig)

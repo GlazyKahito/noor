@@ -8,7 +8,7 @@ python -m unittest discover -s tests -v       # one line per test
 python -m unittest tests/test_risk.py         # one file
 ```
 
-Last full run on the development machine (Python 3.14.6, Windows 11): **150 tests, all passed,
+Last full run on the development machine (Python 3.14.6, Windows 11): **151 tests, all passed,
 about 27 seconds** (most of the time is the HTTP tests drawing charts).
 
 | File | Tests | What it covers |
@@ -21,7 +21,7 @@ about 27 seconds** (most of the time is the HTTP tests drawing charts).
 | `test_importer.py` | 11 | Missing columns, empty/oversized/non-UTF-8 files, BOM and header case, each row-level error with its line number, forecast rows, injection text |
 | `test_database.py` | 18 | 8 tables, foreign keys, CHECK constraints, unique codes, `?` parameters storing hostile text literally, alert status lifecycle, no duplicate alerts, cascade delete, resource change re-scores, every named SQL query, HAVING query, synthetic labelling, imported data kind, reproducible seed, demo gaps, close/destructor, shared lock |
 | `test_open_meteo.py` | 4 | Response parsing into the import format (through the real import validator), URL, argument checks — no network needed |
-| `test_server.py` | 17 | Real HTTP server on a background thread: every page, demo banner, 404 page, inline validation messages, security headers, static path traversal, API reads/errors/writes, form redirects, cross-site POST refused, multipart CSV upload, PNG charts, CSV provenance headers |
+| `test_server.py` | 18 | Real HTTP server on a background thread: every page, front page and intro script, demo banner, 404 page, inline validation messages, security headers, static path traversal, API reads/errors/writes, form redirects, cross-site POST refused, multipart CSV upload, PNG charts, CSV provenance headers |
 
 Each test that needs data builds an in-memory database (`Database(":memory:")`) or a temporary
 file, so tests never touch `instance/noor.db`.
@@ -41,6 +41,10 @@ NOOR targets desktop browsers only (1280 px and wider).
   an alert; take a cooling centre offline and see the ward's score rise (31.7 → 33.4); add a
   resource; save a plan; run and reset a scenario; import a CSV with 7 good rows and 1 bad row;
   download a report; keyboard Tab reaches the skip link first; no console errors.
+
+- Landing-page intro (1366×768): shown on the first visit, gone after about 3.5 s, not shown again
+  in the same visit, Enter skips it, the Skip button works, never shown with reduced motion, and
+  with JavaScript off the landing page shows normally; Google Fonts load; no console errors.
 
 ## Bugs the tests found
 

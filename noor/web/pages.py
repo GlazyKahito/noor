@@ -22,43 +22,104 @@ def _layout(svc, title, active, body, q):
 
 
 # ---------------------------------------------------------------------------- overview
-def overview(svc, q):
-    """Landing page: what NOOR is, the workflow, and a few live numbers."""
-    latest = svc.db.latest_assessments()
-    high = sum(1 for a in latest if a["category"] in ("High", "Severe", "Extreme"))
-    active = len(svc.db.list_alerts(status="active"))
-    plan = svc.plan("risk_first")
-    cool = plan["by_type"]["cooling_centre"]
-    steps = [("/explorer", "Climate data", "Daily temperature and humidity, gaps shown, CSV in and out."),
-             ("/risk", "Risk analysis", "Hazard, exposure, vulnerability and capacity scored separately."),
-             ("/map", "Vulnerability", "Where people are most exposed and least protected."),
-             ("/alerts", "Early warnings", "Threshold rules that explain why they fired."),
-             ("/plans", "Resource planning", "Cooling, water, medical and outreach matched to need."),
-             ("/scenarios", "Scenario comparison", "What if it is 2 °C hotter, or we open five more centres?")]
-    step_html = "".join(f'<li><a href="{href}">{esc(name)}</a><br><span class="small muted">{esc(text)}</span></li>'
-                        for href, name, text in steps)
-    body = f"""
-<section class="hero">
-  <p class="eyebrow">Climate Intelligence &amp; Resilience</p>
-  <h1>NOOR</h1>
-  <p class="tagline">See the risk. Save lives.</p>
-  <p class="lead">NOOR helps communities and decision-makers understand heat risk, find the people most exposed,
-  plan cooling, water and medical resources, and prepare for extreme heat — with methods you can read and change.</p>
-  <p class="actions"><a class="button" href="/dashboard">Open the dashboard</a>
-  <a class="button secondary" href="/methodology">How the scores work</a></p>
-</section>
-<h2>From data to decisions</h2>
-<ol class="steps">{step_html}</ol>
-<h2>Right now in the demo district</h2>
-<div class="stats">
-  {stat("Locations assessed", str(len(latest)))}
-  {stat("High risk or worse", str(high), "Score 40 or more")}
-  {stat("Active alerts", str(active), '<a href="/alerts">See alerts</a>')}
-  {stat("Cooling demand met", pct(cool["coverage"]), f"{fmt(cool['unmet'], 0)} people/day short")}
+INTRO = """<div id="intro" class="intro" aria-hidden="true">
+  <p class="intro-word"><span>N</span><span>O</span><span>O</span><span>R</span></p>
+  <p class="intro-sub">Climate Intelligence &amp; Resilience</p>
+  <p class="intro-tag">See the risk. Save lives.</p>
+  <div class="intro-rule"></div>
+  <button id="intro-skip" class="intro-skip secondary" type="button">Skip intro</button>
 </div>
-<p class="muted small">Every number on this site comes from a calculation in the code, an identified source, or the
-synthetic demonstration dataset — and says which. NOOR is not an official warning service.</p>"""
-    return _layout(svc, "Overview", "/", body, q)
+<script src="/static/intro.js"></script>"""
+
+METHOD_DOC = "https://github.com/GlazyKahito/noor/blob/main/docs/METHODOLOGY.md"
+
+
+def overview(svc, q):
+    """Landing page set like a gazette front page. Every number comes from the engines."""
+    latest = svc.db.latest_assessments()
+    scored = [a for a in latest if a["score"] is not None]
+    high = [a for a in latest if a["category"] in ("High", "Severe", "Extreme")]
+    severe = [a for a in latest if a["category"] in ("Severe", "Extreme")]
+    alerts = svc.db.list_alerts(status="active")
+    emergencies = sum(1 for a in alerts if a["severity"] == "emergency")
+    cooling = svc.plan("risk_first")["by_type"]["cooling_centre"]
+    status = svc.status()
+    as_of = latest[0]["as_of_date"] if latest else "—"
+
+    # hottest heat index in the assessment window, straight from the risk engine
+    peak = None
+    for result in svc.assess():
+        for row in result["details"]["hazard"]:
+            if row["indicator"] == "peak_heat_index" and row["raw"] is not None:
+                if peak is None or row["raw"] > peak[0]:
+                    peak = (row["raw"], result["name"])
+
+    headline = (f"{len(latest)} demonstration areas assessed, {len(high)} at high heat risk or worse"
+                if latest else "No areas assessed yet")
+    stamp = '<span class="stamp">Synthetic demo data</span>' if "synthetic" in status["data_kinds"] else ""
+    peak_text = (f" The hottest conditions were in {esc(peak[1])}, where the heat index reached "
+                 f"{peak[0]:.1f} °C." if peak else "")
+    top = scored[0] if scored else None
+    top_html = '<p class="muted">No area has a score yet.</p>'
+    if top:
+        reasons = "".join(f"<li>{esc(r)}</li>" for r in top["reasons"].split(" | ")[1:4])
+        top_html = (f'<p class="place">{esc(top["name"])}</p>'
+                    f'<p>{category_badge(top["category"])} <span class="kind">score {fmt(top["score"])} · '
+                    f'{esc(top["code"])} · confidence {esc(top["confidence"])}</span></p>'
+                    f'<ul class="reasons">{reasons}</ul>'
+                    f'<p><a href="/risk/{esc(top["code"])}">Why this area scores {fmt(top["score"])}</a></p>')
+    steps = [("/explorer", "Climate data"), ("/risk", "Risk"), ("/map", "Vulnerability"), ("/alerts", "Warnings"),
+             ("/plans", "Resources"), ("/scenarios", "Scenarios")]
+    w = settings.RISK_WEIGHTS
+    workflow = ' <span aria-hidden="true">→</span> '.join(f'<a href="{h}">{esc(t)}</a>' for h, t in steps)
+    body = f"""
+<article class="front">
+  <div class="front-eyebrow"><span class="eyebrow">Front page · assessed as of {esc(as_of)}</span>{stamp}</div>
+  <h1 class="headline">{esc(headline)}</h1>
+  <p class="deck">NOOR reads the heat, counts who is exposed and who is vulnerable, and plans cooling, water and
+  medical help where it is needed most.</p>
+  <div class="front-grid">
+    <div class="lead-columns">
+      <p>In this edition, NOOR assessed {len(latest)} wards of the fictional district of Saptapur for heat risk
+      as of {esc(as_of)}.
+      {len(high)} of them score 40 or more out of 100 (“High” or worse), and {len(severe)} reach “Severe” or
+      “Extreme”.{peak_text}</p>
+      <p>The warning engine lists {len(alerts)} active alerts, {emergencies} at emergency level. With the cooling
+      centres on record, the risk-first plan meets {pct(cooling['coverage'])} of estimated cooling demand, leaving
+      about {fmt(cooling['unmet'], 0)} people a day without a cooling place.</p>
+      <p>Every score is built from four separate parts — hazard, exposure, vulnerability and response capacity —
+      and every page explains where its numbers come from. Missing data is never counted as zero.</p>
+      <p class="small muted">All figures on this page are calculated by NOOR from its database; the district and its
+      data are synthetic demonstration material, not real measurements.</p>
+      <p><a class="button" href="/dashboard">Open the dashboard</a></p>
+    </div>
+    <aside class="sidebar-box" aria-labelledby="top-area">
+      <h2 id="top-area">Today's highest-risk area</h2>
+      {top_html}
+    </aside>
+  </div>
+</article>
+<nav class="workflow" aria-label="Workflow">{workflow}</nav>
+<div class="front-bottom">
+  <section>
+    <h2>About the method</h2>
+    <p>Each indicator is scaled to 0–1 between fixed bounds, averaged within its dimension, and the four dimensions
+    are combined by a weighted sum: {w['hazard']:.0%} hazard, {w['exposure']:.0%} exposure,
+    {w['vulnerability']:.0%} vulnerability, {w['lack_of_capacity']:.0%} lack of response capacity.
+    Warnings are plain threshold rules; resources are allocated by a greedy loop that serves the highest risk first.</p>
+    <p><a href="/methodology">Read the method in the app</a> · <a href="{METHOD_DOC}">Methodology document</a></p>
+  </section>
+  <section>
+    <h2>In this edition</h2>
+    <ul class="reasons">
+      <li><a href="/dashboard">Dashboard</a> — the whole district at a glance</li>
+      <li><a href="/alerts">Early warnings</a> — {len(alerts)} active</li>
+      <li><a href="/scenarios">Scenario lab</a> — what if it is 2 °C hotter?</li>
+      <li><a href="/data">Data &amp; sources</a> — where every number comes from</li>
+    </ul>
+  </section>
+</div>"""
+    return page("Overview", "/", body, q.get("msg"), q.get("err"), _synthetic(svc), before_main=INTRO)
 
 
 # ---------------------------------------------------------------------------- dashboard

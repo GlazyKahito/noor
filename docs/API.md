@@ -88,7 +88,8 @@ with urllib.request.urlopen("http://127.0.0.1:3060/api/plans/compare") as r:
 ## Security
 
 - Every input is validated (types, ranges, known codes, URL patterns); SQL uses `?` parameters.
-- Responses carry `Content-Security-Policy` (no scripts), `X-Frame-Options: DENY`,
+- Responses carry `Content-Security-Policy` (scripts only from NOOR itself, styles from NOOR and
+  Google Fonts, fonts from fonts.gstatic.com), `X-Frame-Options: DENY`,
   `X-Content-Type-Options: nosniff`.
 - HTML form posts from another site are refused (`Origin` must match `Host`). JSON POSTs need
   `Content-Type: application/json`.

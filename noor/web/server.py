@@ -112,7 +112,8 @@ class NoorHandler(BaseHTTPRequestHandler):
         self.send_header("X-Frame-Options", "DENY")
         self.send_header("Referrer-Policy", "same-origin")
         self.send_header("Content-Security-Policy",
-                         "default-src 'self'; img-src 'self' data:; style-src 'self'; script-src 'none'; "
+                         "default-src 'self'; img-src 'self' data:; style-src 'self' https://fonts.googleapis.com; "
+                         "font-src https://fonts.gstatic.com; script-src 'self'; "
                          "form-action 'self'; frame-ancestors 'none'; base-uri 'self'")
         for name, value in (extra_headers or {}).items():
             self.send_header(name, value)
@@ -359,12 +360,13 @@ class NoorHandler(BaseHTTPRequestHandler):
     def static(self, path):
         """Serve files from noor/static (no directory traversal)."""
         name = path[len("/static/"):]
-        if not re.fullmatch(r"[a-z0-9_-]+\.(css|svg|png)", name):
+        if not re.fullmatch(r"[a-z0-9_-]+\.(css|svg|png|js)", name):
             return self.send(404, "Not found", "text/plain")
         full = os.path.join(settings.STATIC_DIR, name)
         if not os.path.isfile(full):
             return self.send(404, "Not found", "text/plain")
-        types = {"css": "text/css; charset=utf-8", "svg": "image/svg+xml", "png": "image/png"}
+        types = {"css": "text/css; charset=utf-8", "svg": "image/svg+xml", "png": "image/png",
+                 "js": "text/javascript; charset=utf-8"}
         with open(full, "rb") as f:
             self.send(200, f.read(), types[name.rsplit(".", 1)[1]], {"Cache-Control": "public, max-age=3600"})
 

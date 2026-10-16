@@ -1,4 +1,5 @@
 """Small helpers that build HTML strings. Every value shown to the user goes through esc()."""
+from datetime import date
 from html import escape
 from urllib.parse import urlencode
 
@@ -92,8 +93,21 @@ def notice(message, kind="info"):
     return f'<div class="notice notice-{kind}" role="{role}">{esc(message)}</div>'
 
 
-def page(title, active, body, message=None, error=None, synthetic=True):
-    """Wrap page content in the shared layout."""
+FONTS = ("https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700"
+         "&family=Lora:ital,wght@0,400;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,400&display=swap")
+
+
+def dateline(today=None):
+    """Today's date set like a newspaper dateline, e.g. 'Friday, 16 October 2026'."""
+    today = today or date.today()
+    return f"{today:%A}, {today.day} {today:%B %Y}"
+
+
+def page(title, active, body, message=None, error=None, synthetic=True, before_main=""):
+    """Wrap page content in the shared layout (gazette masthead, navigation, footer).
+
+    before_main: extra HTML placed right after <body> (the landing page's intro uses it).
+    """
     current = ' aria-current="page"'
     links = "".join(
         f'<a href="{href}"{current if href == active else ""}>{esc(label)}</a>'
@@ -110,14 +124,21 @@ def page(title, active, body, message=None, error=None, synthetic=True):
 <meta name="viewport" content="width=1280">
 <title>{esc(title)} · NOOR</title>
 <meta name="description" content="NOOR — Climate Intelligence &amp; Resilience. See the risk. Save lives.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="{FONTS}">
 <link rel="stylesheet" href="/static/style.css">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 </head>
 <body>
+{before_main}
 <a class="skip" href="#main">Skip to content</a>
 {banner}
 <header class="site-header">
-  <a class="wordmark" href="/" aria-label="NOOR home"><span class="sun" aria-hidden="true"></span>NOOR</a>
+  <div class="masthead-top"><span>Vol. I · KJS-CES-01 heatwave project</span><span>{esc(dateline())}</span>
+  <span>See the risk. Save lives.</span></div>
+  <a class="wordmark" href="/" aria-label="NOOR home">NOOR</a>
+  <p class="masthead-sub">Climate Intelligence &amp; Resilience</p>
   <nav aria-label="Main">{links}</nav>
 </header>
 <main id="main">
@@ -126,7 +147,7 @@ def page(title, active, body, message=None, error=None, synthetic=True):
 </main>
 <footer class="site-footer">
   <p><strong>NOOR</strong> — Climate Intelligence &amp; Resilience. See the risk. Save lives.</p>
-  <p>NOOR supports preparedness planning. It does not replace warnings from the India Meteorological Department,
+  <p>NOOR supports preparedness planning. It does not replace warnings from the India Meteorological Department (IMD),
   State Disaster Management Authorities or local health officials.</p>
   <p><a href="/methodology">Method</a> · <a href="/data">Data &amp; sources</a> · <a href="/api/health">API status</a></p>
 </footer>

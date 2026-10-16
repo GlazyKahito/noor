@@ -8,7 +8,9 @@ covers, so every line can be explained and changed by the team:
 - Python standard library: `http.server`, `sqlite3`, `threading`, `abc`, `unittest`, `urllib`, `json`, `csv`/`email` parsing.
 - NumPy, Pandas, Matplotlib and Seaborn — the only third-party packages.
 - No web framework, ORM, JavaScript framework or chart library. Pages are server-rendered
-  HTML strings with one stylesheet and no JavaScript.
+  HTML strings with one stylesheet (`noor/static/style.css`, the vintage theme). The only
+  JavaScript is `noor/static/intro.js` (about 25 lines) for the landing-page intro; every page
+  works without it.
 
 ## Layers
 

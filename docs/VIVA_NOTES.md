@@ -103,6 +103,10 @@ All in `noor/charts.py`, returned as PNG bytes (`_png()` → `fig.savefig(..., f
 | Histogram | `score_histogram()` |
 | Heatmap (Seaborn) | `risk_map()` (schematic ward grid), `temperature_heatmap()` (wards × days) |
 
+Chart theme: `charts.py` → the `plt.rcParams.update({...})` block (serif type, sand paper, no
+grid) plus the one shared `vintage_style(ax, title)` every chart calls; colours `WINE`, `OCHRE`,
+`OLIVE`, `VINTAGE_CMAP` at the top of the file.
+
 ## 12. SQLite with `sqlite3`
 
 | Topic | Where |
@@ -118,11 +122,20 @@ All in `noor/charts.py`, returned as PNG bytes (`_png()` → `fig.savefig(..., f
 
 ## 13. Unit testing
 
-`tests/` — 150 `unittest` tests (`python -m unittest discover -s tests`). Classes inherit
+`tests/` — 151 `unittest` tests (`python -m unittest discover -s tests`). Classes inherit
 `unittest.TestCase`, use `setUp` / `tearDown` / `setUpClass`, `assertEqual`, `assertRaises`,
 `assertAlmostEqual`. See [TESTING.md](TESTING.md).
 
 ---
+
+## Look and feel (not in the syllabus, but you may be asked)
+
+- **Theme:** `noor/static/style.css` — colours are CSS variables in `:root` (`--wine`, `--sand`,
+  `--panel`, `--ochre`, `--olive`); double rules are `border: 3px double`; the paper grain is one
+  `radial-gradient`.
+- **Intro:** markup is `INTRO` in `noor/web/pages.py`; the animation is CSS `@keyframes stamp / rise
+  / draw` (opacity and transform only) at the end of `style.css`; `noor/static/intro.js` just shows
+  it once per visit (`sessionStorage`), closes it after 3 s, and lets Skip, click, Enter or Esc end it.
 
 ## How to change things live
 

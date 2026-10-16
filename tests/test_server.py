@@ -87,6 +87,16 @@ class ServerTests(unittest.TestCase):
             self.assertIn("text/html", headers["Content-Type"])
             self.assertIn(b"NOOR", body)
 
+    def test_front_page_and_intro(self):
+        _status, _h, body = self.request("/")
+        self.assertIn(b'id="intro"', body)
+        self.assertIn(b"assessed", body)                 # headline built from the database
+        self.assertIn(b"highest-risk area", body)
+        status, headers, script = self.request("/static/intro.js")
+        self.assertEqual(status, 200)
+        self.assertIn("javascript", headers["Content-Type"])
+        self.assertIn(b"sessionStorage", script)
+
     def test_unknown_page_is_friendly_404(self):
         status, _h, body = self.request("/does-not-exist")
         self.assertEqual(status, 404)
