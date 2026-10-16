@@ -77,3 +77,6 @@ Run headless against https://noor-climate.vercel.app after the Git-triggered dep
   cross-site form POST refused (403).
 - 13 pages × 4 desktop windows (1280×800, 1366×768, 1440×900, 1920×1080): all HTTP 200, no
   horizontal overflow, all chart images valid, no console errors; 19 dashboard links all working.
+- Landing intro: shown on first visit and gone after about 3.5 s, not repeated in the same visit,
+  skippable with Enter and the Skip button, absent with reduced motion and with JavaScript off;
+  Google Fonts load under the Content-Security-Policy; no console errors.
