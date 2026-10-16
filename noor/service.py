@@ -24,9 +24,13 @@ class NoorService:
 
     # ------------------------------------------------------------------ setup
     def setup(self):
-        """Create tables; on a fresh database load the demo data and compute first results."""
+        """Create tables; on a fresh database load the demo data and compute first results.
+
+        On every start the risk is recalculated, so a weight or threshold changed in
+        settings.py shows up after a restart."""
         self.db.create_tables()
         if not self.db.is_empty():
+            self.recalculate()
             return None
         summary = seed_database(self.db)
         self.recalculate()

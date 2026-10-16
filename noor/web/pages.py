@@ -1,6 +1,7 @@
 """One function per page. Each takes the NoorService and the query parameters and returns HTML."""
 from .. import settings
 from ..allocation import STRATEGIES
+from ..exceptions import ValidationError
 from ..models import RESOURCE_CLASSES
 from ..queries import QUERIES, run_query
 from ..scenario import LIMITS
@@ -133,7 +134,7 @@ Thresholds are NOOR defaults, not IMD criteria. See <a href="/methodology">Metho
 # ---------------------------------------------------------------------------- explorer
 def explorer(svc, q):
     """Climate data explorer: one location's daily series, comparisons and CSV export."""
-    from ..climate import explorer_table, location_comparison, monthly_means
+    from ..climate import explorer_table, location_comparison, monthly_means, summary_stats
     locations = svc.db.list_locations()
     frame = svc.db.observations_frame()
     if frame.empty:
@@ -151,10 +152,14 @@ def explorer(svc, q):
     loc_frame = frame[frame["location"] == code]
     daily = explorer_table(loc_frame, start, end)
     missing = int(daily["missing"].sum())
+    stats = summary_stats(daily["t_max"])
+    stats_line = (f"Max temperature over {stats['count']} observed days: mean {fmt(stats['mean'])} °C, "
+                  f"lowest {fmt(stats['min'])} °C, highest {fmt(stats['max'])} °C, "
+                  f"standard deviation {fmt(stats['std'])} °C." if stats["count"] else "No observed days in this period.")
     rows = []
     for day, r in daily.iloc[::-1].iterrows():
         rows.append([day.strftime("%Y-%m-%d"), fmt(r["t_max"]), fmt(r["t_min"]), fmt(r["humidity"], 0),
-                     fmt(r["heat_index"]), "missing" if r["missing"] else f'<span class="kind">{esc(r["source_kind"])}</span>'])
+                     fmt(r["heat_index"]), f'<span class="kind">{esc(r["source_kind"])}</span>'])
     comp = location_comparison(observed[(observed["date"] >= start) & (observed["date"] <= end)])
     comp_rows = [[esc(r["location"]), esc(r["name"]), fmt(r["mean_tmax"]), fmt(r["max_tmax"]), fmt(r["mean_tmin"]),
                   fmt(r["mean_humidity"], 0), str(int(r["days_observed"])), str(int(r["days_missing"]))]
@@ -179,6 +184,7 @@ Days with no data are listed as <em>missing</em>, never filled in.</p>
   <a class="button secondary" href="{esc(export)}">Download CSV</a>
 </form>
 {chart(trend, f"Temperature and heat index trend for {code}")}
+<p>{esc(stats_line)}</p>
 <p class="small muted">{missing} missing day(s) in this period. Heat index uses daily maximum temperature with daily
 mean humidity, which can overstate the afternoon value.</p>
 <div class="grid grid-2">
@@ -203,12 +209,16 @@ def risk(svc, q):
     weights = None
     custom = all(q.get("w_" + k) for k in settings.RISK_WEIGHTS)
     error = q.get("err")
+    rows_data = None
     if custom:
         weights = {k: q.get("w_" + k) for k in settings.RISK_WEIGHTS}
-        results = svc.assess(weights)
-        rows_data = [{**r, "as_of_date": r["as_of"]} for r in results]
-        rows_data.sort(key=lambda r: (r["score"] is None, -(r["score"] or 0)))
-    else:
+        try:
+            results = svc.assess(weights)
+            rows_data = [{**r, "as_of_date": r["as_of"]} for r in results]
+        except ValidationError as exc:  # show the form again with the reason
+            error = f"Weights not applied: {exc.message}"
+            custom = False
+    if rows_data is None:
         rows_data = svc.db.latest_assessments()
     category = q.get("category")
     if category:
@@ -223,7 +233,7 @@ def risk(svc, q):
     cat_choices = [("", "All categories")] + [(n, n) for _, n in settings.CATEGORIES] + [("Insufficient data", "Insufficient data")]
     sort_choices = [("score", "Score"), ("name", "Name"), ("hazard", "Hazard"), ("vulnerability", "Vulnerability"),
                     ("confidence", "Confidence")]
-    current = weights or settings.RISK_WEIGHTS
+    current = weights or settings.RISK_WEIGHTS  # keep what the user typed, even if it was rejected
     weight_fields = "".join(
         f'<div class="field"><label for="w_{k}">{esc(k.replace("_", " ").capitalize())}</label>'
         f'<input id="w_{k}" name="w_{k}" type="number" min="0" max="1" step="0.05" value="{esc(current[k])}"></div>'
@@ -520,8 +530,14 @@ def scenarios(svc, q):
                    f'type="number" min="{low}" max="{high}" step="{step}" value="{esc(value)}">'
                    f'<span class="hint">{low}–{high}</span></div>')
     result_html = ""
+    error = None
+    result = None
     if q.get("run"):
-        result = svc.scenario(params)
+        try:
+            result = svc.scenario(params)
+        except ValidationError as exc:
+            error = f"Scenario not run: {exc.message}"
+    if result is not None:
         c = result["comparison"]
         type_rows = [[esc(TYPE_LABELS[r["type"]]), fmt(r["unmet_before"], 0), fmt(r["unmet_after"], 0),
                       pct(r["coverage_before"]), pct(r["coverage_after"]), pct(r["utilisation_before"]),
@@ -560,7 +576,7 @@ is rerun on the changed inputs.</p>
 cooling demand is highest. Humidity is held constant when temperature rises (a simplification).</p>
 </form>
 {result_html}"""
-    return _layout(svc, "Scenario lab", "/scenarios", body, q)
+    return page("Scenario lab", "/scenarios", body, q.get("msg"), error or q.get("err"), _synthetic(svc))
 
 
 # ---------------------------------------------------------------------------- reports

@@ -117,7 +117,18 @@ def explorer_table(df, start, end):
     data.index.name = "date"
     data["heat_index"] = [heat_index(t, h) for t, h in zip(data["t_max"], data["humidity"])]
     data["missing"] = data["t_max"].isna()
+    data["source_kind"] = data["source_kind"].fillna("missing")  # label days with no row
     return data[["t_max", "t_min", "humidity", "heat_index", "source_kind", "missing"]]
+
+
+def summary_stats(values):
+    """Mean, minimum, maximum and standard deviation of a series, ignoring missing days (NumPy)."""
+    array = np.asarray(values, dtype=float)
+    array = array[~np.isnan(array)]  # boolean mask keeps only real numbers
+    if array.size == 0:
+        return {"count": 0, "mean": None, "min": None, "max": None, "std": None}
+    return {"count": int(array.size), "mean": float(np.mean(array)), "min": float(np.min(array)),
+            "max": float(np.max(array)), "std": float(np.std(array))}
 
 
 def location_comparison(df):

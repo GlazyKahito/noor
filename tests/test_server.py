@@ -94,8 +94,11 @@ class ServerTests(unittest.TestCase):
 
     def test_bad_weights_show_message_not_crash(self):
         status, _h, body = self.request("/risk?w_hazard=0.9&w_exposure=0.9&w_vulnerability=0.9&w_lack_of_capacity=0.9")
-        self.assertEqual(status, 400)
+        self.assertEqual(status, 200)  # the form comes back with the reason
         self.assertIn(b"add up to 1.0", body)
+        status, _h, body = self.request("/scenarios?run=1&temperature_increase=99")
+        self.assertEqual(status, 200)
+        self.assertIn(b"Scenario not run", body)
 
     def test_security_headers(self):
         _s, headers, _b = self.request("/dashboard")

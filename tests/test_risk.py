@@ -4,7 +4,7 @@ import unittest
 from helpers import daily_frame, location, resource
 
 from noor import settings
-from noor.climate import heat_index, hazard_inputs, longest_run
+from noor.climate import hazard_inputs, heat_index, longest_run, summary_stats
 from noor.exceptions import ValidationError
 from noor.risk import RiskEngine, category_for, normalise, resource_capacity_per_1000
 
@@ -149,6 +149,12 @@ class HazardTests(unittest.TestCase):
     def test_forecast_days_count(self):
         hz = hazard_inputs(daily_frame(AS_OF, HOT_WEEK, forecast=3), AS_OF)
         self.assertEqual(hz["hot_days"], 10)
+
+    def test_summary_stats_ignore_missing(self):
+        stats = summary_stats([40.0, None, 42.0, float("nan"), 44.0])
+        self.assertEqual((stats["count"], stats["mean"], stats["min"], stats["max"]), (3, 42.0, 40.0, 44.0))
+        self.assertAlmostEqual(stats["std"], 1.633, places=3)  # population std of 40, 42, 44
+        self.assertIsNone(summary_stats([None])["mean"])
 
     def test_scenario_warming_raises_peak(self):
         base = hazard_inputs(daily_frame(AS_OF, HOT_WEEK), AS_OF)

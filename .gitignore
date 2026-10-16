@@ -12,3 +12,4 @@ instance/
 .vercel/
 node_modules/
 e2e-artifacts/
+charts/
