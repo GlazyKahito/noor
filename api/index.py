@@ -24,13 +24,16 @@ class handler(NoorHandler):
     """The local NoorHandler plus one step: undo Vercel's rewrite."""
 
     def restore_path(self):
-        """Turn /api/index?__path=risk/SPR-01&x=1 back into /risk/SPR-01?x=1."""
+        """Turn /api/index?__path=risk/SPR-01&path=risk/SPR-01&x=1 back into /risk/SPR-01?x=1."""
         parsed = urlparse(self.path)
         if not parsed.path.startswith("/api/index"):
             return
         params = parse_qsl(parsed.query, keep_blank_values=True)
-        original = "/" + next((value for key, value in params if key == "__path"), "").lstrip("/")
-        rest = urlencode([(key, value) for key, value in params if key != "__path"])
+        captured = next((value for key, value in params if key == "__path"), "")
+        original = "/" + captured.lstrip("/")
+        # Vercel also appends the rewrite's capture as `path=...`; drop that echo too.
+        rest = urlencode([(key, value) for key, value in params
+                          if key != "__path" and not (key == "path" and value == captured)])
         self.path = original + ("?" + rest if rest else "")
 
     def do_GET(self):
