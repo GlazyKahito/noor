@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+instance/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+.env
+.env.local
+.vercel/
+node_modules/
+e2e-artifacts/

@@ -1,0 +1,2 @@
+# Runtime dependencies (also used by the Vercel Python runtime)
+Flask==3.1.3
