@@ -9,7 +9,7 @@ python -m unittest tests/test_risk.py         # one file
 ```
 
 Last full run on the development machine (Python 3.14.6, Tk 8.6, Windows 11, numpy 2.5.4,
-pandas 3.0.6, matplotlib 3.11.2): **153 tests, all passed, about 42 seconds.**
+pandas 3.0.6, matplotlib 3.11.2): **162 tests, all passed, about 48 seconds.**
 
 | File | Tests | What it covers |
 | --- | --- | --- |
@@ -23,6 +23,8 @@ pandas 3.0.6, matplotlib 3.11.2): **153 tests, all passed, about 42 seconds.**
 | `test_charts.py` | 4 | Every chart returns a Matplotlib `Figure` with axes; empty data gives a message, not an error; category counts match the assessments; PNG export |
 | `test_open_meteo.py` | 4 | Response parsing into the import format (through the real import validator), URL, argument checks; no network needed |
 | `test_gui.py` | 13 | The real `NoorApp` window (created hidden) with a temporary database: start-up seeds the database; every screen opens with no error; Overview numbers equal the database; observation filters and a rejected date; CSV check and import (one good row saved, one bad row listed); exports; risk detail and invalid/valid what-if weights; acknowledge and resolve saved, never backwards; edit, reassign, add (and reject a bad code), delete a resource; save and export a plan; Scenario Lab runs the real calculation on the background thread and shows a bad setting as a message instead of crashing; every report and chart export; SQL query with a bad and a good parameter; add a location and reject a share above 1 |
+
+| `test_web.py` | 9 | The real website server on a background thread: all 24 screens and tabs, the Overview numbers equal the database, bad input gives a message (400) not a crash, unknown pages 404, every chart is a PNG, every CSV export has its provenance header, the charts ZIP, alert status saved and never backwards, resource update/add (and a rejected bad code), plan saved, cross-site post refused (403), CSV upload with one good and one bad row |
 
 Tests that need data build an in-memory database (`Database(":memory:")`) or a temporary
 file, so they never touch `instance/noor.db`. The GUI tests replace message boxes with a
@@ -41,6 +43,11 @@ fixed this way:
   past the window edge. `widgets.split_panes` now places the divider at a fixed share of
   the width.
 - Long reasons in the risk detail panel were cut off; they now wrap to the panel width.
+
+The website was also checked in headless Chromium at 1400 × 860: every screen loads with no broken
+image, no console error and no sideways scroll; sorting a table and clicking a row work. That
+check found inline `style=` attributes blocked by the site's Content-Security-Policy; they are now
+CSS classes.
 
 ## Bugs the tests found
 

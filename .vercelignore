@@ -1,0 +1,11 @@
+.venv
+instance
+tests
+docs
+scripts
+*.db
+__pycache__
+.pytest_cache
+noor/gui
+app.py
+Start NOOR.bat

@@ -6,6 +6,8 @@ Tkinter window with FigureCanvasTkAgg; save_png() writes the same Figure to a PN
 Figures are made with matplotlib.figure.Figure (the object-oriented API), not pyplot, so no
 global pyplot state is involved and every chart is an ordinary object.
 """
+import io
+
 import matplotlib
 import numpy as np
 import pandas as pd
@@ -70,6 +72,13 @@ def style_axes(ax, title):
 def save_png(fig, path):
     """Write a Figure to a PNG file."""
     fig.savefig(path, format="png", dpi=110, facecolor=fig.get_facecolor())
+
+
+def to_png(fig):
+    """A Figure as PNG bytes (the website sends these to the browser)."""
+    buffer = io.BytesIO()
+    save_png(fig, buffer)
+    return buffer.getvalue()
 
 
 def empty_chart(message, width=6, height=1.6):

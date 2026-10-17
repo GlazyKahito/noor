@@ -13,12 +13,18 @@ PROJECT_DIR = os.path.dirname(PACKAGE_DIR)
 SCHEMA_FILE = os.path.join(PACKAGE_DIR, "schema.sql")
 
 
+ON_VERCEL = bool(os.environ.get("VERCEL"))  # the website's host sets this
+
+
 def database_path():
     """Return the SQLite file path: instance/noor.db inside the project folder.
 
-    The NOOR_DB_PATH environment variable overrides it (the tests use a temporary file)."""
+    The NOOR_DB_PATH environment variable overrides it (the tests use a temporary file).
+    On Vercel only /tmp can be written, so the website keeps its database there."""
     if os.environ.get("NOOR_DB_PATH"):
         return os.environ["NOOR_DB_PATH"]
+    if ON_VERCEL:
+        return "/tmp/noor.db"
     return os.path.join(PROJECT_DIR, "instance", "noor.db")
 
 

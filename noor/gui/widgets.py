@@ -1,48 +1,13 @@
 """Reusable building blocks for the screens: cards, number tiles, tables, charts, forms."""
 import gc
 import tkinter as tk
-from datetime import datetime, timezone
 from tkinter import ttk
 
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+from ..summaries import RULE_LABELS, fmt, pct, when  # noqa: F401 (re-exported for the screens)
 from . import styles
 from .styles import CARD, FONTS, LINE
-
-RULE_LABELS = {
-    "heat_index": "Heat index",
-    "hot_spell": "Hot spell",
-    "warm_nights": "Warm nights",
-    "risk_category": "Risk category",
-    "cooling_gap": "Cooling gap",
-    "stale_data": "Stale data",
-}
-
-
-# ---------------------------------------------------------------------------- formatting
-def fmt(value, digits=0, unit=""):
-    """Number with thousands separators; an em dash for missing values."""
-    if value is None or value != value:  # None or NaN
-        return "—"
-    text = f"{value:,.{digits}f}"
-    return f"{text} {unit}".strip()
-
-
-def pct(value):
-    """0.734 -> '73%'; missing -> em dash."""
-    return "—" if value is None else f"{value * 100:.0f}%"
-
-
-def when(stamp):
-    """'2026-10-17T10:48:01Z' (UTC) -> '17 Oct 2026, 16:18' in the computer's local time."""
-    if not stamp:
-        return "—"
-    try:
-        moment = datetime.strptime(stamp, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-    except ValueError:
-        return stamp
-    return moment.astimezone().strftime("%d %b %Y, %H:%M")
-
 
 # ---------------------------------------------------------------------------- page
 class Page(ttk.Frame):

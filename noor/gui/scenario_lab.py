@@ -7,7 +7,7 @@ from tkinter import filedialog, ttk
 
 from .. import charts, reports, settings
 from ..scenario import LIMITS
-from .resource_allocation import TYPE_LABELS
+from ..summaries import TYPE_LABELS, limit_range, scenario_explanation
 from .widgets import (split_panes, Card, ChartPanel, DataTable, Form, Page, ScrollableFrame, bullet_list, caps, fmt, pct,
                       tile_row)
 
@@ -42,7 +42,7 @@ class ScenarioPage(Page):
         for name, (label, step) in PARAMS.items():
             low, high, default = LIMITS[name]
             form.add(name, label, "spin", values=(low, high, step), default=default, width=12,
-                     hint=f"{low:g} to {high:,g}")
+                     hint=limit_range(low, high))
         form.pack(fill="x")
         self.form = form
         buttons = ttk.Frame(left.body, style="Card.TFrame")
@@ -108,42 +108,12 @@ class ScenarioPage(Page):
         limited = " (limited by " + " and ".join(result["limited_by"]) + ")" if result["limited_by"] else ""
         self.tiles["centres"].set(str(len(result["placed_centres"])),
                                   f"₹{result['extra_cost_per_day']:,}/day extra{limited}")
-        bullet_list(self.explain, self._explanation(result), wraplength=760)
+        bullet_list(self.explain, scenario_explanation(result), wraplength=760)
         self.chart.show(charts.scenario_chart(c))
         self.type_table.set_rows([{"id": r["type"], "label": TYPE_LABELS[r["type"]], **r} for r in c["by_type"]])
         rows = sorted(c["locations"], key=lambda r: (r["change"] is None, -abs(r["change"] or 0)))
         self.loc_table.set_rows(rows, tag_fn=lambda r: r["category_after"])
         self.app.set_status("Scenario calculated (what-if only; nothing saved).", "ok")
-
-    @staticmethod
-    def _explanation(result):
-        """Plain sentences built only from the calculated numbers."""
-        p, c = result["params"], result["comparison"]
-        lines = [f"Settings: +{p['temperature_increase']:g} °C, {p['extra_hot_days']} extra hot day(s), "
-                 f"{p['new_cooling_centres']} new centre(s) requested, water {p['water_capacity_pct']}%, "
-                 f"medical {p['medical_capacity_pct']}%, budget ₹{p['budget_per_day']:,}/day, "
-                 f"{p['staff_available']} staff."]
-        if c["mean_score_before"] is not None and c["mean_score_after"] is not None:
-            diff = c["mean_score_after"] - c["mean_score_before"]
-            lines.append(f"The mean risk score moves from {c['mean_score_before']:.1f} to {c['mean_score_after']:.1f} "
-                         f"({diff:+.1f}); {c['high_after']} location(s) are High or above, against {c['high_before']} "
-                         f"today.")
-        moved = [r for r in c["locations"] if r["category_before"] != r["category_after"]]
-        if moved:
-            lines.append("Category changes: " + "; ".join(f"{r['name']} {r['category_before']} → {r['category_after']}"
-                                                          for r in moved[:6]) + ("…" if len(moved) > 6 else "."))
-        else:
-            lines.append("No location changes category.")
-        if result["placed_centres"]:
-            lines.append("New cooling centres placed at: " + ", ".join(result["placed_centres"]) + ".")
-        if result["limited_by"]:
-            lines.append("Fewer centres than requested could be placed: limited by "
-                         + " and ".join(result["limited_by"]) + ".")
-        lines.append(f"Unmet demand changes from {fmt(c['unmet_before'])} to {fmt(c['unmet_after'])} per day.")
-        if c["still_needing_help"]:
-            lines.append("Still needing intervention: " + ", ".join(f"{r['name']} ({r['category']})"
-                                                                     for r in c["still_needing_help"]) + ".")
-        return lines
 
     def reset(self):
         for name in PARAMS:

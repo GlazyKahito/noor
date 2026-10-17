@@ -6,28 +6,13 @@ an examiner try other weights: that is a preview only and is not saved.
 from tkinter import ttk
 
 from .. import charts, settings
-from ..risk import LABELS, format_value
+from ..summaries import (WEIGHT_LABELS, data_note_for, indicator_rows, method_text,
+                         recommended_actions)
 from .widgets import (split_panes, Card, ChartPanel, DataTable, Form, Page, ScrollableFrame, bullet_list, caps, fmt,
                       when)
 
 ALL = "All categories"
 CATEGORY_NAMES = [name for _t, name in settings.CATEGORIES] + ["Insufficient data"]
-WEIGHT_LABELS = {"hazard": "Hazard", "exposure": "Exposure", "vulnerability": "Vulnerability",
-                 "lack_of_capacity": "Lack of capacity"}
-DIMENSION_NAMES = {"hazard": "Hazard", "exposure": "Exposure", "vulnerability": "Vulnerability",
-                   "capacity": "Response capacity"}
-
-
-def method_text():
-    """The formula and thresholds, read from settings.py so they always match the code."""
-    w = settings.RISK_WEIGHTS
-    bands = ", ".join(f"{name} ≥ {threshold:.0f}" for threshold, name in settings.CATEGORIES)
-    return (f"Score = 100 × ({w['hazard']:.2f} × hazard + {w['exposure']:.2f} × exposure + "
-            f"{w['vulnerability']:.2f} × vulnerability + {w['lack_of_capacity']:.2f} × (1 − capacity)). "
-            f"Each dimension is a weighted average of min-max normalised indicators (0 = best, 1 = worst). "
-            f"Categories: {bands}. A dimension with no data uses {settings.MISSING_DIMENSION_VALUE}, not 0. "
-            f"Fewer than {settings.MIN_OBSERVED_DAYS} observed days in the {settings.WINDOW_DAYS}-day window "
-            f"gives 'Insufficient data'.")
 
 
 class RiskPage(Page):
@@ -183,33 +168,11 @@ class RiskPage(Page):
         wrap = self.detail_width()
         bullet_list(self.d_reasons, result["reasons"], wraplength=wrap)
 
-        open_alerts = [a for a in self.db.list_alerts() if a["code"] == code and a["status"] != "resolved"]
-        actions = []
-        for alert in open_alerts:
-            for action in alert["actions"].split(" | "):
-                if action and action not in actions:
-                    actions.append(action)
-        if actions:
-            bullet_list(self.d_actions, actions + [f"From {len(open_alerts)} open alert(s) for this location "
-                                                   f"(see the Alerts screen)."], wraplength=wrap)
-        else:
-            bullet_list(self.d_actions, ["No warning rule has fired for this location; continue routine monitoring."],
-                        wraplength=wrap)
-
+        bullet_list(self.d_actions, recommended_actions(self.db, code), wraplength=wrap)
         self.d_chart.show(charts.dimension_chart(result))
-        rows = []
-        for dim, items in result["details"].items():
-            for item in items:
-                label, unit = LABELS[item["indicator"]]
-                rows.append({"id": item["indicator"], "dimension": DIMENSION_NAMES[dim], "indicator": label,
-                             "value": format_value(item["raw"], unit), "normalised": item["normalised"],
-                             "weight": item["weight"]})
-        self.d_table.set_rows(rows, keep_selection=False)
-        missing = len(result["missing_days"])
-        self.d_data.configure(text=f"Assessed as of {result['as_of']}: {result['observed_days']} observed day(s) in "
-                                   f"the {settings.WINDOW_DAYS}-day window, {missing} missing; "
-                                   f"{result['completeness'] * 100:.0f}% of indicators available."
-                                   + (" Preview weights in use." if self.weights else ""), wraplength=wrap)
+        self.d_table.set_rows(indicator_rows(result), keep_selection=False)
+        self.d_data.configure(text=data_note_for(result) + (" Preview weights in use." if self.weights else ""),
+                              wraplength=wrap)
 
     def detail_width(self):
         """Text width that fits the detail panel."""

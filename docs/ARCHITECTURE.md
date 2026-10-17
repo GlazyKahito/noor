@@ -108,11 +108,30 @@ no global `pyplot` state) and returns the Figure. `widgets.ChartPanel.show(fig)`
 `FigureCanvasTkAgg`, so it resizes with the window. `charts.save_png(fig, path)` writes the
 same Figure to a file (Reports → Charts, and `scripts/export_charts.py`).
 
+## The website
+
+`noor/web/` shows the same eight screens in a browser. A browser cannot run Tkinter, so each
+screen is an HTML page built by `pages.py` from the same data the desktop screen uses; the
+sentences and table rows come from `noor/summaries.py`, which both interfaces import.
+
+- `server.py` → `NoorHandler(BaseHTTPRequestHandler)` routes `GET /`, `/monitoring`, `/risk`,
+  `/alerts`, `/resources`, `/scenario`, `/reports`, `/data`; `/chart/<name>.png` (the same
+  Matplotlib Figures, turned into PNG bytes by `charts.to_png`); `/export/<name>.csv` (the same
+  `reports.py` CSVs) and `/export/charts.zip`.
+- Buttons that change data are HTML forms posted to `/actions/...`, `/alerts/<id>/status`,
+  `/resources/...`, `/plans/save`, `/data/locations` and `/monitoring/import`. The server calls the
+  same `NoorService` method as the desktop button, then sends the browser back to the screen with
+  the status message (post/redirect/get). Posts from other websites are refused.
+- Locally: `python web.py` (a `ThreadingHTTPServer`, one thread and one database connection per
+  request). On Vercel: `api/index.py` subclasses the handler; `vercel.json` sends every URL to it.
+  The database is created in `/tmp` from the demo data when a server instance starts.
+
 ## Settings
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `NOOR_DB_PATH` | `instance/noor.db` | SQLite file (the tests use a temporary file) |
+| `VERCEL` | set by Vercel | the website keeps its database in `/tmp/noor.db` |
 
 There are no secrets: NOOR calls no paid API and needs no keys.
 

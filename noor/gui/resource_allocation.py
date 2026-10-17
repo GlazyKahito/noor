@@ -8,13 +8,11 @@ from tkinter import filedialog, messagebox, ttk
 from .. import charts, reports, settings
 from ..allocation import STRATEGIES
 from ..models import RESOURCE_CLASSES, make_resource
+from ..summaries import STRATEGY_LABELS, TYPE_LABELS, plan_location_rows
 from .widgets import (split_panes, Card, ChartPanel, DataTable, Form, Page, choice_label, code_from_choice, fmt, pct,
                       tile_row, wrap_on_resize)
 
-TYPE_LABELS = {name: cls.label for name, cls in RESOURCE_CLASSES.items()}
 TYPE_BY_LABEL = {label: name for name, label in TYPE_LABELS.items()}
-STRATEGY_LABELS = {"risk_first": "Risk-first (risk score × population)",
-                   "population_first": "Population-first (baseline)"}
 STRATEGY_BY_LABEL = {label: key for key, label in STRATEGY_LABELS.items()}
 KIND_BY_LABEL = {label: key for key, label in settings.DATA_KINDS.items()}
 STATUSES = list(settings.STATUS_FACTOR)
@@ -251,14 +249,7 @@ class ResourcesPage(Page):
         self.plan_tiles["gaps"].set(str(len(gaps)), ", ".join(gaps) if gaps else "none")
         self.type_table.set_rows([{"id": t, "label": TYPE_LABELS[t], **v} for t, v in plan["by_type"].items()])
         self.plan_chart.show(charts.allocation_chart(plan))
-        rows = []
-        for r in plan["locations"]:
-            row = {"code": r["code"], "name": r["name"], "category": r["category"]}
-            for t in settings.DEMAND_RATES:
-                d, s = r[t + "_demand"], r[t + "_served"]
-                row[t] = "—" if d is None else f"{fmt(s)} / {fmt(d)}"
-            rows.append(row)
-        self.loc_table.set_rows(rows, tag_fn=lambda r: r["category"])
+        self.loc_table.set_rows(plan_location_rows(plan), tag_fn=lambda r: r["category"])
 
     def save_plan(self):
         strategy = STRATEGY_BY_LABEL.get(self.p_strategy.get(), "risk_first")
