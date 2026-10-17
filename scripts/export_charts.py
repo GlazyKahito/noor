@@ -1,7 +1,7 @@
 """Save NOOR's main charts as PNG files (for reports and slides).
 
 Usage (from the project folder):  python scripts/export_charts.py [OUTPUT_FOLDER]
-Default folder: charts/ (git-ignored). Uses the same database as the app.
+Default folder: charts/ (git-ignored). Uses the same database as the desktop app.
 """
 import os
 import sys
@@ -29,9 +29,8 @@ def main(folder):
         "scenario_plus2C_5centres.png": charts.scenario_chart(
             svc.scenario({"temperature_increase": 2, "new_cooling_centres": 5})["comparison"]),
     }
-    for name, png in files.items():
-        with open(os.path.join(folder, name), "wb") as f:
-            f.write(png)
+    for name, figure in files.items():
+        charts.save_png(figure, os.path.join(folder, name))
         print("saved", os.path.join(folder, name))
     db.close()
 

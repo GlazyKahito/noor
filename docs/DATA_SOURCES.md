@@ -21,7 +21,7 @@
 | --- | --- |
 | Source | Open-Meteo historical weather API, `https://archive-api.open-meteo.com/v1/archive` |
 | Kind | `model_derived` — gridded reanalysis model output, not weather-station measurements |
-| Retrieval | `scripts/fetch_open_meteo.py CODE LAT LON START END` writes a CSV; you then import it on the Data page. Verified reachable on 2026-10-16 with a 3-day request for Ahmedabad (23.03 N, 72.58 E) |
+| Retrieval | `scripts/fetch_open_meteo.py CODE LAT LON START END` writes a CSV; you then import it on Climate Monitoring → Import CSV. Verified reachable on 2026-10-16 with a 3-day request for Ahmedabad (23.03 N, 72.58 E) |
 | Coverage | Global grid; any past date range up to a year per request |
 | Variables | `temperature_2m_max`, `temperature_2m_min` (°C), `relative_humidity_2m_mean` (%), daily, Asia/Kolkata time zone |
 | Licence | CC BY 4.0, free for non-commercial use; credit “Weather data by Open-Meteo.com” |
@@ -29,7 +29,7 @@
 
 ## 3. Your own data (CSV import)
 
-The Data page accepts `location_code,date,t_max,t_min,humidity[,is_forecast]`. You must name
+Climate Monitoring → Import CSV accepts `location_code,date,t_max,t_min,humidity[,is_forecast]`. You must name
 the source, choose its kind (measured, model-derived, estimated, synthetic) and give its licence
 (“unknown” is allowed, but must be written). Each upload becomes a new `data_sources` row, and
 every imported observation points at it.

@@ -1,7 +1,6 @@
 # NOOR runtime dependencies (the only third-party packages used).
-# Tested locally with numpy 2.5.4, pandas 3.0.6, matplotlib 3.11.2, seaborn 0.13.2 on Python 3.14,
-# and on Vercel's Python 3.12 runtime.
+# Everything else is the Python standard library: tkinter/ttk, sqlite3, csv/io, threading, unittest.
+# Tested with numpy 2.5.4, pandas 3.0.6 and matplotlib 3.11.2 on Python 3.14 (Windows 11).
 numpy>=2.0
 pandas>=2.2
 matplotlib>=3.8
-seaborn>=0.13

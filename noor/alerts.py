@@ -1,7 +1,7 @@
 """Early-warning rules: simple if/elif thresholds, one class per rule.
 
 Each rule's check() looks at one location's context and returns an Alert or None. Rules do
-not touch the database or the web page, so each one can be unit-tested on its own.
+not touch the database or the screen, so each one can be unit-tested on its own.
 
 NOOR alerts support preparedness only. They do not replace warnings from the India
 Meteorological Department (IMD), State Disaster Management Authorities or local officials.
@@ -28,10 +28,6 @@ class Alert:
         self.period = period
         self.actions = actions
         self.confidence = confidence
-
-    def sms_preview(self):
-        """Short text for the local notification simulation. Nothing is ever sent."""
-        return f"[NOOR {self.severity.upper()}] {self.message[:120]} {self.actions[0] if self.actions else ''}"[:300]
 
 
 class AlertRule(ABC):

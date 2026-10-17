@@ -10,17 +10,15 @@ import os
 # ---------------------------------------------------------------------------- paths
 PACKAGE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(PACKAGE_DIR)
-STATIC_DIR = os.path.join(PACKAGE_DIR, "static")
 SCHEMA_FILE = os.path.join(PACKAGE_DIR, "schema.sql")
-ON_VERCEL = bool(os.environ.get("VERCEL"))
 
 
 def database_path():
-    """Return the SQLite file path. Vercel only allows writing in /tmp."""
+    """Return the SQLite file path: instance/noor.db inside the project folder.
+
+    The NOOR_DB_PATH environment variable overrides it (the tests use a temporary file)."""
     if os.environ.get("NOOR_DB_PATH"):
         return os.environ["NOOR_DB_PATH"]
-    if ON_VERCEL:
-        return "/tmp/noor.db"
     return os.path.join(PROJECT_DIR, "instance", "noor.db")
 
 

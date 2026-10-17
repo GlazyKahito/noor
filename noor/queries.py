@@ -1,4 +1,4 @@
-"""Readable SQL examples used by the Reports page and the viva demo.
+"""Readable SQL examples used by the Reports screen and the viva demo.
 
 Each query is a plain string you can copy into any SQLite tool. Run them in Python with
 run_query(db, name, params). They show JOIN, GROUP BY, HAVING, sub-queries and ? parameters.
@@ -72,6 +72,16 @@ FROM locations l
 LEFT JOIN alerts a ON a.location_id = l.id AND a.status <> 'resolved'
 GROUP BY l.id
 ORDER BY open_alerts DESC, l.code""",
+        "params": (),
+    },
+    # GROUP BY two columns with CASE to order severities from worst to mildest.
+    "alerts_by_severity": {
+        "title": "Alerts by severity and status",
+        "sql": """
+SELECT severity, status, COUNT(*) AS alerts
+FROM alerts
+GROUP BY severity, status
+ORDER BY CASE severity WHEN 'emergency' THEN 0 WHEN 'warning' THEN 1 WHEN 'advisory' THEN 2 ELSE 3 END, status""",
         "params": (),
     },
     # Data provenance: how many rows each source contributed and of what kind.

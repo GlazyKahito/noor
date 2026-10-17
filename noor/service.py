@@ -1,6 +1,6 @@
 """NoorService: the one place where the database and the calculations meet.
 
-The web pages and the JSON API call these methods; they never run SQL or maths themselves.
+The desktop screens (noor/gui/) call these methods; they never run SQL or maths themselves.
 """
 from datetime import date
 
@@ -160,7 +160,7 @@ class NoorService:
         if clean.empty:
             return report
         name = f"{source_name} ({date.today().isoformat()}, {self.db.fetch_one('SELECT COUNT(*) AS n FROM data_sources')['n'] + 1})"
-        source_id = self.db.add_source(name, kind, "Uploaded CSV", licence, "Imported through the Data page")
+        source_id = self.db.add_source(name, kind, "Uploaded CSV", licence, "Imported in the NOOR desktop app")
         ids = {row["code"]: row["id"] for row in self.db.list_locations()}
         self.db.add_observations([
             (ids[r.location_code], r.date, int(r.is_forecast), none_if_nan(r.t_max), none_if_nan(r.t_min),
@@ -229,8 +229,19 @@ class NoorService:
         self.db.update_resource(code, status, amount)
         self.recalculate()
 
+    def move_resource(self, code, location_code):
+        """Reassign a resource to another location and recalculate risk (capacity changes)."""
+        location = self.db.get_location((location_code or "").strip())  # NotFoundError if unknown
+        self.db.move_resource(code, location["id"])
+        self.recalculate()
+
+    def delete_resource(self, code):
+        """Remove a resource (its saved allocation rows go with it) and recalculate risk."""
+        self.db.delete_resource(code)
+        self.recalculate()
+
     def status(self):
-        """Counts, data freshness and sources for the status page and /api/status."""
+        """Counts, data freshness and sources for the Overview and Data screens."""
         latest = self.db.fetch_one("SELECT MAX(obs_date) AS d FROM observations WHERE is_forecast = 0")["d"]
         kinds = sorted({s["kind"] for s in self.db.list_sources() if s["observations"] or s["locations"]})
         return {

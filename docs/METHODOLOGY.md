@@ -1,7 +1,8 @@
 # Methodology
 
-Every number below is defined in `noor/settings.py`. The Method page of the app
-(`/methodology`) is generated from the same file, so the app and the code cannot disagree.
+Every number below is defined in `noor/settings.py`. The formula and category thresholds shown
+on the Risk Assessment screen ("Method and what-if weights") are read from the same file, so
+the app and the code cannot disagree.
 
 None of the thresholds are official Indian warning criteria. The heat-index bands come from
 the US National Weather Service (NWS) heat index chart; everything else is a NOOR default
@@ -82,8 +83,8 @@ score = 100 × (0.40 × hazard + 0.20 × exposure + 0.25 × vulnerability + 0.15
   (precautionary, mid-range) — never 0 — and the location is flagged “imputed”.
 - If hazard < 0.2 (a cool week), the score is capped at 39.9 so vulnerability alone can never
   produce a “High” heat risk.
-- Weights are configurable (`settings.RISK_WEIGHTS`, or what-if weights on the Risk page /
-  `POST /api/risk/weights`). They must be the four keys, each 0–1, summing to 1, with hazard > 0.
+- Weights are configurable (`settings.RISK_WEIGHTS`, or the what-if weights preview on the Risk
+  Assessment screen, which is not saved). They must be the four keys, each 0–1, summing to 1, with hazard > 0.
 
 ### Step 4 — category
 
@@ -102,7 +103,7 @@ No score → “Insufficient data”.
 ### Input kinds
 
 Every source row has a `kind`: `measured`, `model_derived`, `estimated` or `synthetic`. Locations,
-observations and resources point at their source, so every page and CSV can say what kind of
+observations and resources point at their source, so every screen and CSV can say what kind of
 data it shows. The bundled data is all `synthetic`.
 
 ### Validation approach and limits
@@ -118,7 +119,7 @@ data it shows. The bundled data is all `synthetic`.
 
 One class per rule, each with a `check(context)` that returns an `Alert` or `None`.
 `WarningEngine.run()` loops over every rule for every location. Generation is separate from
-storage (`Database.save_alert`) and display (`pages.alerts`).
+storage (`Database.save_alert`) and display (the Alerts screen, `noor/gui/alerts_view.py`).
 
 | Rule class | Fires when | Severity |
 | --- | --- | --- |

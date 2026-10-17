@@ -78,6 +78,26 @@ class DatabaseTests(unittest.TestCase):
         after = {a["code"]: a["score"] for a in self.db.latest_assessments()}
         self.assertGreater(after["SPR-06"], before["SPR-06"])  # its own cooling centre went offline
 
+    def test_move_resource_reassigns_and_recalculates(self):
+        before = {a["code"]: a["score"] for a in self.db.latest_assessments()}
+        self.svc.move_resource("CC-02", "SPR-16")  # Civil Lines' cooling centre moves far away
+        moved = next(r for r in self.db.list_resources() if r["code"] == "CC-02")
+        self.assertEqual(moved["location_code"], "SPR-16")
+        after = {a["code"]: a["score"] for a in self.db.latest_assessments()}
+        self.assertGreater(after["SPR-06"], before["SPR-06"])
+
+    def test_move_resource_rejects_unknown_codes(self):
+        with self.assertRaises(NotFoundError):
+            self.svc.move_resource("CC-02", "NOPE")
+        with self.assertRaises(NotFoundError):
+            self.svc.move_resource("NOPE", "SPR-01")
+
+    def test_service_delete_resource(self):
+        self.svc.delete_resource("CC-01")
+        self.assertNotIn("CC-01", {r["code"] for r in self.db.list_resources()})
+        with self.assertRaises(NotFoundError):
+            self.svc.delete_resource("CC-01")
+
     def test_unknown_location(self):
         with self.assertRaises(NotFoundError):
             self.db.get_location("NOPE")

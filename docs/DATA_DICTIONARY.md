@@ -128,7 +128,8 @@ Index: `idx_obs_location_date (location_id, obs_date)`.
 
 ## Useful SQL
 
-`noor/queries.py` holds readable examples (also runnable on the Reports page and at
-`/api/queries/<name>`): risk by region (JOIN + GROUP BY), locations with many hot days
+`noor/queries.py` holds readable examples (also runnable on Reports & Analytics → SQL
+queries): risk by region (JOIN + GROUP BY), locations with many hot days
 (GROUP BY + HAVING), inventory by type and status, monthly climate (strftime), alerts per
-location (LEFT JOIN), rows per source (provenance), and missing days per location (HAVING).
+location (LEFT JOIN), alerts by severity and status (GROUP BY two columns), rows per source
+(provenance), and missing days per location (HAVING).

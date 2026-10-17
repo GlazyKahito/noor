@@ -109,9 +109,9 @@ class OtherRuleTests(unittest.TestCase):
         alert = RiskCategoryRule().check(context([30] * 7, category="Extreme", score=85, synthetic=True))
         self.assertIn("synthetic", alert.confidence)
 
-    def test_sms_preview_is_short(self):
+    def test_alert_carries_recommended_actions(self):
         alert = HotSpellRule().check(context([41] * 7))
-        self.assertLessEqual(len(alert.sms_preview()), 300)
+        self.assertTrue(alert.actions)
 
 
 class EngineTests(unittest.TestCase):

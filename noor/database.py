@@ -3,9 +3,10 @@
 Every query uses ? placeholders (never string formatting with user input), so a value like
 "x'; DROP TABLE locations; --" is stored as plain text and cannot change the SQL.
 
-The local web server answers requests on several threads. Each request opens its own
-Database object (sqlite3 connections should not be shared between threads), and all writes
-go through one class-level threading.Lock so two threads never write at the same moment.
+The desktop app runs slower jobs (seeding, scenarios, imports) on a background thread. Each
+thread opens its own Database object (sqlite3 connections should not be shared between
+threads), and all writes go through one class-level threading.Lock so two threads never write
+at the same moment.
 """
 import os
 import sqlite3
@@ -92,7 +93,7 @@ class Database:
         return self.fetch_one("SELECT COUNT(*) AS n FROM data_sources")["n"] == 0
 
     def table_counts(self):
-        """Row count of every table, for the status page."""
+        """Row count of every table, for the Data screen."""
         tables = ["data_sources", "regions", "locations", "observations", "resources",
                   "risk_assessments", "alerts", "allocations"]
         return {t: self.fetch_one(f"SELECT COUNT(*) AS n FROM {t}")["n"] for t in tables}  # fixed names
@@ -209,6 +210,12 @@ class Database:
         if self.fetch_one("SELECT id FROM resources WHERE code = ?", (code,)) is None:
             raise NotFoundError(f"No resource with code '{code}'")
         self.execute("UPDATE resources SET status = ?, amount = ? WHERE code = ?", (status, amount, code))
+
+    def move_resource(self, code, location_id):
+        """Reassign a resource to another location (its home base for the service radius)."""
+        if self.fetch_one("SELECT id FROM resources WHERE code = ?", (code,)) is None:
+            raise NotFoundError(f"No resource with code '{code}'")
+        self.execute("UPDATE resources SET location_id = ? WHERE code = ?", (location_id, code))
 
     def delete_resource(self, code):
         """Delete a resource (its saved allocation rows go with it: ON DELETE CASCADE)."""

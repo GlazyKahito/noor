@@ -1,5 +1,10 @@
 # NOOR design record (Phase 1)
 
+> **Historical.** This is the original Phase-1 plan for the first, browser-based version of
+> NOOR. NOOR is now a Tkinter desktop application; see the [README](../README.md) and
+> [ARCHITECTURE.md](ARCHITECTURE.md) for what exists today. The browser version is kept in git
+> under the tag `web-version`.
+
 This is the plan written before any code. Later documents (architecture, methodology,
 data dictionary, API) describe what was actually built; where they differ, they win.
 
